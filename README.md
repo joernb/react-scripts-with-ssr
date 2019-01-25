@@ -1,7 +1,4 @@
-# react-scripts
+# react-scripts-with-ssr
 
-This package includes scripts and configuration used by [Create React App](https://github.com/facebook/create-react-app).<br>
-Please refer to its documentation:
-
-- [Getting Started](https://facebook.github.io/create-react-app/docs/getting-started) – How to create a new app.
-- [User Guide](https://facebook.github.io/create-react-app/) – How to develop apps bootstrapped with Create React App.
+This is a fork of [react-scripts](https://github.com/facebook/create-react-app/tree/master/packages/react-scripts), which adds support for server-side rendering (SSR).
+react-scripts is a part of [Create React App](https://github.com/facebook/create-react-app), which can be used with a customized version of react-scripts.

@@ -1,14 +1,17 @@
 {
-  "name": "react-scripts",
-  "version": "2.1.3",
+  "name": "react-scripts-with-ssr",
+  "version": "0.1.0",
   "description": "Configuration and scripts for Create React App.",
-  "repository": "facebook/create-react-app",
+  "repository": "joernb/react-scripts-with-ssr",
+  "author": "Joern Buchwald",
+  "homepage": "https://github.com/joernb/react-scripts-with-ssr#readme",
   "license": "MIT",
+  "keywords": ["react-scripts", "create-react-app", "ssr", "server-side-rendering"],
   "engines": {
     "node": ">=6"
   },
   "bugs": {
-    "url": "https://github.com/facebook/create-react-app/issues"
+    "url": "https://github.com/joernb/react-scripts-with-ssr/issues"
   },
   "files": [
     "bin",
@@ -20,7 +23,7 @@
     "utils"
   ],
   "bin": {
-    "react-scripts": "./bin/react-scripts.js"
+    "react-scripts-with-ssr": "./bin/react-scripts.js"
   },
   "types": "./lib/react-app.d.ts",
   "dependencies": {
