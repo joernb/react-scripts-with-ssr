@@ -41,7 +41,11 @@ module.exports = function (webpackEnv) {
             // Avoid shadowing of process.env for ssr handler
             webpack.DefinePlugin
           ].every(pluginClass => !(plugin instanceof pluginClass))
-        )
+        ),
+        // do not bundle express
+        externals: [
+          "express"
+        ]
       },
       // client compiler config
       {

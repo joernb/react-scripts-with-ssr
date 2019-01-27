@@ -1,0 +1,73 @@
+/**
+ * This file is supposed to export a request handler, which implements server-side rendering in a Node.js runtime
+ * environment.
+ * 
+ * In production, the request handler may be imported by an executable node script, which sets up an express server.
+ * A sample script is provided in `react-scripts-with-ssr/scripts/serve.js`, which you may start with `npm run serve`
+ * to test your production builds of the request handler. That script however is not part of the compilation. It is up
+ * to you to implement, how the request handler is integrated in your server-side infrastructure.
+ * 
+ * This file may also export a function called `devServerHandler`, which is supposed to return a request handler for
+ * the development environment. That request handler is plugged into the local webpack dev server started by `npm start`.
+ */
+import React from 'react';
+import { renderToNodeStream } from "react-dom/server";
+import * as express from "express";
+import * as fs from "fs";
+import * as path from "path";
+
+import App from './App';
+
+// provide a way to emulate fs access in development mode when builds are served from in-memory
+let readFileSync = fs.readFileSync;
+
+const router = express.Router();
+// serve static files from the node runtime's current working dir
+router.use(express.static(
+  // serve files from current working dir
+  ".",
+  {
+    // do not send index.html for "/"
+    index: false
+  }
+));
+
+// do server-side rendering
+router.use((request, response, next) => {
+  const template = readFileSync("index.html").toString();
+  const [head, tail] = template.split("ROOT");
+  const stream = renderToNodeStream(<App />);
+  response.write(head);
+  stream.pipe(response, { end: false });
+  stream.on("end", () => {
+    response.write(tail);
+    response.end();
+  });
+});
+
+/**
+ * Export a request handler. This can be plugged into an express instance or deployed as a serverless function.
+ * An express router itself implements the request handler interface (composite design pattern).
+ */
+export default router;
+
+/**
+ * Supposed to return a request handler which can be plugged into a webpack dev server during development.
+ * This function should return a somehow altered or decorated version of the 'export default' request handler,
+ * which handles differences between development and production environment.
+ * @param compiler webpack compiler which compiles the ssr entry point
+ */
+export const devServerHandler = compiler => {
+  // redirect file access to use in-memory fs of the compiler
+  readFileSync = fileName =>
+    compiler.outputFileSystem.readFileSync(path.resolve("dist", fileName));
+
+  // wrap the production router to handle some requests in another way
+  const devServerRouter = express.Router();
+
+  // skip all requests to static files, the webpack dev middleware will handle them
+  const notAStaticFile = /^\/(?!static|favicon\.ico).*/;
+  devServerRouter.use(notAStaticFile, router);
+
+  return devServerRouter;
+};
