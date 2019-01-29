@@ -24,22 +24,27 @@ module.exports = function(proxy, allowedHost) {
 
       // fetch ssr handler after every compilation
       multiCompiler.hooks.done.tap('webpackDevServer.ssr', () => {
-        // fetch ssr entry point file name
-        const filename = path.resolve(paths.appBuild, "..", "dist", "ssr.js");
-        // read code from in memory fs
-        const code = compiler.outputFileSystem.readFileSync(filename).toString();
-        // compile code to node module
-        const exports = requireFromString(code, filename);
+        // make errors inside hook visible
+        try {
+          // fetch ssr entry point file name
+          const filename = path.resolve(paths.appBuild, "..", "dist", "ssr.js");
+          // read code from in memory fs
+          const code = compiler.outputFileSystem.readFileSync(filename).toString();
+          // compile code to node module
+          const exports = requireFromString(code, filename);
 
-        if (exports.devServerHandler) {
-          // install dev server handler
-          ssrHandler = exports.devServerHandler(compiler);
-        } else if (exports.default) {
-          // install production handler
-          ssrHandler = exports.default;
-        } else {
-          // no handler found
-          throw new Error("SSR entry point does not export a handler.");
+          if (exports.devServerHandler) {
+            // install dev server handler
+            ssrHandler = exports.devServerHandler(compiler);
+          } else if (exports.default) {
+            // install production handler
+            ssrHandler = exports.default;
+          } else {
+            // no handler found
+            throw new Error("SSR entry point does not export a handler.");
+          }
+        } catch (error) {
+          console.error(error);
         }
       });
 

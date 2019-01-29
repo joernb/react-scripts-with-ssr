@@ -10,9 +10,6 @@ require('../config/env');
 const PORT = parseInt(process.env.PORT) || 3000;
 const PUBLIC_PATH = process.env.PUBLIC_PATH || '/';
 
-// serve static files from build dir
-process.chdir(paths.appBuild);
-
 // include compiled server-side request handler
 const ssrModuleFile = path.resolve(paths.appBuild, "ssr.js");
 const ssrModule = require(ssrModuleFile);

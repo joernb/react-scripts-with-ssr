@@ -11,32 +11,35 @@
  * the development environment. That request handler is plugged into the local webpack dev server started by `npm start`.
  */
 import React from 'react';
-import { renderToNodeStream } from "react-dom/server";
-import * as express from "express";
-import * as fs from "fs";
-import * as path from "path";
-
+import { renderToNodeStream } from 'react-dom/server';
+import express from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
 import App from './App';
 
 // provide a way to emulate fs access in development mode when builds are served from in-memory
 let readFileSync = fs.readFileSync;
 
 const router = express.Router();
-// serve static files from the node runtime's current working dir
+
+// serve static files from build/ dir
 router.use(express.static(
-  // serve files from current working dir
-  ".",
+  'build',
   {
-    // do not send index.html for "/"
+    // do not send index.html for '/'
     index: false
   }
 ));
 
 // do server-side rendering
 router.use((request, response, next) => {
-  const template = readFileSync("index.html").toString();
-  const [head, tail] = template.split("ROOT");
+  const template = readFileSync('build/index.html')
+    .toString()
+    .replace(/%PUBLIC_URL%/g, process.env.PUBLIC_URL || '')
+
+  const [head, tail] = template.split('ROOT');
   const stream = renderToNodeStream(<App />);
+  response.type('html');
   response.write(head);
   stream.pipe(response, { end: false });
   stream.on("end", () => {
@@ -60,7 +63,12 @@ export default router;
 export const devServerHandler = compiler => {
   // redirect file access to use in-memory fs of the compiler
   readFileSync = fileName =>
-    compiler.outputFileSystem.readFileSync(path.resolve("dist", fileName));
+    compiler.outputFileSystem.readFileSync(
+      path.resolve(
+        // handlers should expect files in build/ but the dev server writes them to dist/
+        fileName.replace('build', 'dist')
+      )
+    );
 
   // wrap the production router to handle some requests in another way
   const devServerRouter = express.Router();
