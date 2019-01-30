@@ -3,6 +3,7 @@
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
+const nodeExternals = require('webpack-node-externals');
 const webpackConfigFactory = require('./webpack.config.js');
 const paths = require('./paths');
 const getClientEnvironment = require('./env');
@@ -43,7 +44,8 @@ module.exports = function (webpackEnv) {
           // avoid shadowing of process.env for ssr handler
           webpack.DefinePlugin
         ].every(pluginClass => !(plugin instanceof pluginClass))
-      )
+      ),
+      externals: [nodeExternals()]
     },
     // client compiler config
     {
