@@ -3,6 +3,7 @@
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin-alt');
 const nodeExternals = require('webpack-node-externals');
 const webpackConfigFactory = require('./webpack.config.js');
 const paths = require('./paths');
@@ -60,8 +61,11 @@ module.exports = function (webpackEnv) {
       // filter out some plugins
       plugins: template.plugins.filter(plugin =>
         [
+          // seems to break multicompiler dev server watch mode
+          ForkTsCheckerWebpackPlugin,
+          // interpolation of '%PUBLIC_URL%' will happen at runtime, not compile time
           InterpolateHtmlPlugin,
-          // filter out original DefinePlugin
+          // this will be replaced by a modified version
           webpack.DefinePlugin
         ].every(pluginClass => !(plugin instanceof pluginClass))
       ).concat([

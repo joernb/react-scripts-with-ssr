@@ -35,7 +35,7 @@ router.use(express.static(
 router.use((request, response, next) => {
   const template = readFileSync('build/index.html')
     .toString()
-    .replace(/%PUBLIC_URL%/g, process.env.PUBLIC_URL || '')
+    .replace(/%PUBLIC_URL%/g, process.env.PUBLIC_URL || '');
 
   const [head, tail] = template.split('%ROOT%');
   const stream = renderToNodeStream(<App />);
