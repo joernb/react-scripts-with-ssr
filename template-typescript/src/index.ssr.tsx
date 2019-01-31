@@ -22,17 +22,11 @@ let readFileSync: (filename: string) => Buffer = fs.readFileSync;
 
 const router = express.Router();
 
-// serve static files from build/ dir
-router.use(express.static(
-  'build',
-  {
-    // do not send index.html for '/'
-    index: false
-  }
-));
+// define ssr path pattern, exclude file and hmr requests
+const ssrRegex = /^\/(?!static|favicon\.ico|.*hot-update\.js).*/;
 
 // do server-side rendering
-router.use((request: express.Request, response: express.Response, next: express.NextFunction) => {
+router.use(ssrRegex, (request: express.Request, response: express.Response, next: express.NextFunction) => {
   const template = readFileSync('build/index.html')
     .toString()
     .replace(/%PUBLIC_URL%/g, process.env.PUBLIC_URL || '');
@@ -47,6 +41,15 @@ router.use((request: express.Request, response: express.Response, next: express.
     response.end();
   });
 });
+
+// serve static files from build/ dir
+router.use(express.static(
+  'build',
+  {
+    // do not send index.html for '/'
+    index: false
+  }
+));
 
 /**
  * Export a request handler. This can be plugged into an express instance or deployed as a serverless function.
@@ -70,12 +73,8 @@ export const devServerHandler = (compiler: any) => {
       )
     );
 
-  // wrap the production router to handle some requests in another way
+  // ignore in-memory file requests, will be handled by the webpack dev middleware
   const devServerRouter = express.Router();
-
-  // skip all requests to static files, the webpack dev middleware will handle them
-  const notAStaticFile = /^\/(?!static|favicon\.ico).*/;
-  devServerRouter.use(notAStaticFile, router);
-
+  devServerRouter.use(ssrRegex, router);
   return devServerRouter;
 };
