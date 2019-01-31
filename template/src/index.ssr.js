@@ -37,7 +37,7 @@ router.use((request, response, next) => {
     .toString()
     .replace(/%PUBLIC_URL%/g, process.env.PUBLIC_URL || '')
 
-  const [head, tail] = template.split('ROOT');
+  const [head, tail] = template.split('%ROOT%');
   const stream = renderToNodeStream(<App />);
   response.type('html');
   response.write(head);
