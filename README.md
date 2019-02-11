@@ -85,3 +85,7 @@ Merge the subtree branch into this project:
 git remote add upstream ../create-react-app
 git merge upstream react-scripts-v2.1.3
 ```
+
+## Sponsors
+
+<a href="http://newcubator.com" target="_blank"><img src="sponsor-logo.png"></a>
