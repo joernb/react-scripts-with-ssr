@@ -27,9 +27,7 @@ module.exports = function (webpackEnv) {
       output: {
         ...template.output,
         filename: 'ssr.js',
-        libraryTarget: 'commonjs2',
-        // use '' instead of '/' to make urls relative to base href
-        publicPath: ''
+        libraryTarget: 'commonjs2'
       },
       optimization: {
         ...template.optimization,
@@ -55,30 +53,14 @@ module.exports = function (webpackEnv) {
       name: 'client',
       output: {
         ...template.output,
-        // use '' instead of '/' to make urls relative to base href
-        publicPath: ''
       },
       // filter out some plugins
       plugins: template.plugins.filter(plugin =>
         [
           // seems to break multicompiler dev server watch mode
           ForkTsCheckerWebpackPlugin,
-          // interpolation of '%PUBLIC_URL%' will happen at runtime, not compile time
-          InterpolateHtmlPlugin,
-          // this will be replaced by a modified version
-          webpack.DefinePlugin
         ].every(pluginClass => !(plugin instanceof pluginClass))
-      ).concat([
-        // redefine process.env values on the client
-        new webpack.DefinePlugin({
-          'process.env': {
-            // use existing values
-            ...env.stringified['process.env'],
-            // override with base href
-            PUBLIC_URL: 'document.getElementsByTagName("base")[0].href'
-          }
-        }),
-      ])
+      )
     },
   ];
 };
