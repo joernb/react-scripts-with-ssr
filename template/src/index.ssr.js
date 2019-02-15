@@ -29,7 +29,10 @@ const ssrRegex = /^\/(?!static|favicon\.ico|.*hot-update\.js).*/;
 router.use(ssrRegex, (request, response, next) => {
   const template = readFileSync('build/index.html')
     .toString()
-    .replace(/%PUBLIC_URL%/g, process.env.PUBLIC_URL || '');
+    .replace(/%BASE_HREF%/g, process.env.BASE_HREF || '')
+    .replace(/%CLIENT_ENV%/g, JSON.stringify({
+      FOO: 'bar'
+    }));
 
   const [head, tail] = template.split('%ROOT%');
   const stream = renderToNodeStream(<App />);

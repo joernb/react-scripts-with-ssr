@@ -5,6 +5,11 @@ import App from './App';
 import './App.css';
 import * as serviceWorker from './serviceWorker';
 
+// Use clientEnv to access environment variables from the server.
+
+// Get the server URL from the base tag if you need it.
+const baseHref = document.getElementsByTagName("base")[0].href;
+
 ReactDOM.render(<App />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change

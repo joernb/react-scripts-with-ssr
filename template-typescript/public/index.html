@@ -2,7 +2,17 @@
 <html lang="en">
 
 <head>
-  <base href="%PUBLIC_URL%/" />
+  <!--
+      %BASE_HREF% is a placeholder, that is supposed to be replaced by the
+      server-side renderer. %BASE_HREF% is determined during runtime and can be
+      changed without recompiling making your compiled web app independent of
+      a server / CDN location. The base tag specifies how to resolve relative
+      URLs for CSS files, favicon, etc (notice the trailing slash in the href
+      attribute). Therefore, using %BASE_HREF% only makes sense if all other URL
+      references are kept relative. Alternatively, you can delete the base tag
+      and use %PUBLIC_URL% as documented by create-react-app.
+    -->
+  <base href="%BASE_HREF%/" />
   <meta charset="utf-8" />
   <link rel="shortcut icon" href="favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -12,15 +22,7 @@
       homescreen on Android. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
   <link rel="manifest" href="manifest.json" />
-  <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
+  <script>clientEnv=%CLIENT_ENV%</script>
   <title>React App</title>
 </head>
 

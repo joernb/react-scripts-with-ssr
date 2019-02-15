@@ -47,23 +47,28 @@ During development, the request handler will be integrated into the local webpac
 
 If `src/index.ssr.js` exports a function called `devServerHandler`, it will be invoked and its return value will be used as a request handler during development instead. This gives your entry point the possibility to make environment-specific adjustments. For example, all assets are compiled in-memory during development and should not be served from the real file system.
 
-### Relative Urls
-`create-react-app` provides a variable called `PUBLIC_URL`, which is accessible via `process.env.PUBLIC_URL` in JavaScript or by using the placeholder `%PUBLIC_URL%` in Html.
+### Relative Urls, PUBLIC_URL and BASE_HREF
+`create-react-app` provides a variable called `PUBLIC_URL`, which is accessible via `process.env.PUBLIC_URL` in JavaScript or by using the placeholder `%PUBLIC_URL%` in HTML to reference assets. This variable is determined at **compile time** and must be specified before compilation, which makes your compiled web app dependant on the specified location.
 
-For non-ssr projects, the public url has to be known at **compile time**. It is defined via Webpack's `publicPath` property and baked into the client-side js file with the `DefinePlugin` which hardcodes `process.env` into the compiled script.
+For projects with server-side rendering however, there is another, possibly better way to deal with this. Instead of hardcoding the public url, HTML assets can be referenced with a relative url and the server-side renderer can read a specified base url at **runtime** and render it into a base tag. `react-scripts-with-ssr` supports using `PUBLIC_URL` but recommends the described approach using the `BASE_HREF` environment variable:
+* Define a `BASE_HREF` environment variable in your server runtime environment containing your base url (e.g. `https://example.com/folder`).
+* Add `<base href="%BASE_HREF%/" />` to your index.html template. Notice the trailing slash.
+* Replace `%BASE_HREF%` with the value of `process.env.BASE_HREF` in your server-side request handler.
+* Make all asset references in HTML relative. Do not use `%PUBLIC_URL%` in URLs or server-relative URLs (e.g. `/some/url`).
+* Make the build scripts emit relative paths by providing `PUBLIC_URL` as environment variable with the value `.` during compile time or setting the `homepage` field in `package.json` to `.`.
+* If you need access to BASE_HREF in JavaScript, read it from `document.getElementsByTagName("base")[0].href;`.
 
-For ssr projects however, it is possible to configure the PUBLIC_URL as environment variable on the server-side and render them into the client-side output during **runtime** instead. This makes the compiled code location-independent and you don't need to recompile the code if you deploy it to another location. To make this possible, `react-scripts-with-ssr` makes some significant changes:
-* The `public/index.html` template is supposed to contain a `<base href="%PUBLIC_URL%/" />` tag
-* Urls to other included files in `public/index.html` may be relative and will work in combination with the base tag
-* The variable substitution of `%PUBLIC_URL%` must take place during runtime inside the ssr request handler.
-* On the client-side, the base tag href value is provided as `process.env.PUBLIC_URL`
-* Other environment variables (NODE_ENV and the ones with REACT_APP prefix) are still baked in at compile time
+### Using runtime environment variables on the client
 
-### Transferring ssr data to the client
+`create-react-app` provides `process.env` on the client-side to access environment variables prefixed with REACT_APP and defined at **compile time**.
 
-If you need to "transfer" values from the ssr request handler to the client (e.g. for preloaded state), you can do this:
-* Add a variable assignment script `<script>FOO='%FOO%'</script>` to `public/index.html`
-* Replace the placeholder in the ssr request handler with `.replace(/%FOO%/g, foo)`
+However, if you want to make your server's **runtime** environment variables available on the client-side, you can do this with a `clientEnv` variable:
+* Add a variable assignment script `<script>clientEnv=%CLIENT_ENV%</script>` to the head section in `public/index.html`.
+* Replace the placeholder in the ssr request handler with `.replace(/%CLIENT_ENV%/g, JSON.stringify({ FOO: 'bar' }))`.
+* Access the value on the client-side with `clientEnv.FOO`.
+* For TypeScript: Declare the global variable `declare const clientEnv: NodeJS.ProcessEnv;`.
+
+You might also use this mechanism to transfer preloaded state to the client.
 
 
 ## Contribute
