@@ -40,10 +40,23 @@ module.exports = function (webpackEnv) {
         [
           // do not generate an additional index.html for ssr
           HtmlWebpackPlugin,
-          // avoid shadowing of process.env for ssr handler
+          // avoid overriding process.env on the server, we will provide a customized DefinePlugin
           webpack.DefinePlugin
         ].every(pluginClass => !(plugin instanceof pluginClass))
-      ),
+      ).concat([
+        // modified version of the DefinePlugin that does not override but extend process.env
+        // this will preserve embedded env vars but also allow reading real env vars on the server
+        new webpack.DefinePlugin(
+          Object.keys(env.raw).reduce(
+            (newEnv, key) => ({
+              ...newEnv,
+              // this will result in s.th. like: process.env.FOO = process.env.FOO || "embedded default value" 
+              ['process.env.' + key]: 'process.env.' + key + '||' + JSON.stringify(env.raw[key])
+            }),
+            {}
+          )
+        )
+      ]),
       externals: [nodeExternals()]
     },
     // client compiler config

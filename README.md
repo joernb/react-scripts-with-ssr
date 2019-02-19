@@ -50,7 +50,7 @@ If `src/index.ssr.js` exports a function called `devServerHandler`, it will be i
 ### Relative Urls, PUBLIC_URL and BASE_HREF
 `create-react-app` provides a variable called `PUBLIC_URL`, which is accessible via `process.env.PUBLIC_URL` in JavaScript or by using the placeholder `%PUBLIC_URL%` in HTML to reference assets. This variable is determined at **compile time** and must be specified before compilation, which makes your compiled web app dependant on the specified location.
 
-For projects with server-side rendering however, there is another, possibly better way to deal with this. Instead of hardcoding the public url, HTML assets can be referenced with a relative url and the server-side renderer can read a specified base url at **runtime** and render it into a base tag. `react-scripts-with-ssr` supports using `PUBLIC_URL` but recommends the described approach using the `BASE_HREF` environment variable:
+For projects with server-side rendering however, there is another way to deal with this. Instead of hardcoding the public url, HTML assets can be referenced with a relative url and the server-side renderer can read a specified base url at **runtime** and render it into a base tag. `react-scripts-with-ssr` supports using `PUBLIC_URL` but also allows the `BASE_HREF` approach:
 * Define a `BASE_HREF` environment variable in your server runtime environment containing your base url (e.g. `https://example.com/folder`).
 * Add `<base href="%BASE_HREF%/" />` to your index.html template. Notice the trailing slash.
 * Replace `%BASE_HREF%` with the value of `process.env.BASE_HREF` in your server-side request handler.
@@ -58,13 +58,15 @@ For projects with server-side rendering however, there is another, possibly bett
 * Make the build scripts emit relative paths by providing `PUBLIC_URL` as environment variable with the value `.` during compile time or setting the `homepage` field in `package.json` to `.`.
 * If you need access to BASE_HREF in JavaScript, read it from `document.getElementsByTagName("base")[0].href;`.
 
-### Using runtime environment variables on the client
+### Environment variables
 
-`create-react-app` provides `process.env` on the client-side to access environment variables prefixed with REACT_APP and defined at **compile time**.
+`create-react-app` embeds environment variables prefixed with REACT_APP in the build during **compile time** and provides them with a simulated `process.env` object using Webpack's DefinePlugin.
 
-However, if you want to make your server's **runtime** environment variables available on the client-side, you can do this with a `clientEnv` variable:
+While embedding is necessary on the client-side, the ssr request handler runs in a Node.js context with real environment variables. `react-scripts-with-ssr` allows accessing external environment variables in the ssr request handler during **runtime**. However, all variables contained in the client-side build are also embedded into the ssr request handler as default values if they are not provided by the runtime environment.
+
+If you want to make your server's **runtime** environment variables available on the client-side, you can do this with a `clientEnv` variable:
 * Add a variable assignment script `<script>clientEnv=%CLIENT_ENV%</script>` to the head section in `public/index.html`.
-* Replace the placeholder in the ssr request handler with `.replace(/%CLIENT_ENV%/g, JSON.stringify({ FOO: 'bar' }))`.
+* Replace the placeholder in the ssr request handler with `.replace(/%CLIENT_ENV%/g, JSON.stringify({ FOO: process.env.FOO }))`.
 * Access the value on the client-side with `clientEnv.FOO`.
 * For TypeScript: Declare the global variable `declare const clientEnv: NodeJS.ProcessEnv;`.
 
